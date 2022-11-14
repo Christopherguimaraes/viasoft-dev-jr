@@ -53,15 +53,9 @@ end;
 
 function TModelAcao.Calcular(_AOperacao: string; _Avalor,_ASaldo: currency): string;
 begin
-   if _AOperacao = '+' then begin
-      if getAcao=2 then begin //ação devolver
-         if ContemSaldoPOperacao(_Avalor,_ASaldo) then
-            Result := CurrToStr(_Asaldo + _AValor)
-         else
-            Result := CurrToStr(_Asaldo);
-      end else
-         Result := CurrToStr(_Asaldo + _AValor);
-   end else begin
+   if _AOperacao = '+' then
+         Result := CurrToStr(_Asaldo + _AValor)
+   else begin
       if ContemSaldoPOperacao(_Avalor,_ASaldo) then
          Result := CurrToStr(_Asaldo - _AValor)
       else

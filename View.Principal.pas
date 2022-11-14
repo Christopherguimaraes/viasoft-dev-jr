@@ -31,11 +31,11 @@ type
           AcaoDev = 2;
 
   private
-    procedure InserirGrid;
+    function InserirGrid:boolean;
     function InserirPessoa: boolean;
     function InserirValor:boolean;
     procedure Sair;
-    procedure InserirInformacoes;
+    function InserirInformacoes: boolean;
     procedure AjstBtnDep;
     procedure AjstBtnDev;
     procedure AjstBtnSac;
@@ -61,11 +61,18 @@ begin
    InserirInformacoes;
 end;
 
-procedure TPrincipal.InserirInformacoes;
+function TPrincipal.InserirInformacoes : boolean;
 begin
+   Result := false;
    if InserirPessoa then begin
-      if InserirValor then
-         InserirGrid;
+      if InserirValor then begin
+         if InserirGrid then
+           if FAcao.getDescAcao(FAcao.getAcao) = 'Sacou' then begin
+              btnDevolver.Visible:= True;
+           end;
+           if FAcao.getDescAcao(FAcao.getAcao) = 'Devolveu' then
+               btnDevolver.Enabled:= False;
+      end;
    end;
 end;
 
@@ -115,8 +122,9 @@ procedure TPrincipal.mMovFinancChange(Sender: TObject);
 begin
 end;
 
-procedure TPrincipal.InserirGrid;
+function TPrincipal.InserirGrid:boolean;
 begin
+   Result := False;
    var ASaldoAnt := StrToCurr(eSaldo.Text);
    eSaldo.Text := FAcao.Calcular(FAcao.getOperacao,FAcao.GetValor,StrToCurr(eSaldo.text));
    if {(StrToCurr(eSaldo.Text) > 0) and }(StrToCurr(eSaldo.Text)<> ASaldoAnt) then begin
@@ -124,6 +132,7 @@ begin
                            FAcao.getDescAcao(FAcao.getAcao) + ' | ' +
                            CurrToStr(FAcao.getValor) + sLineBreak +
                            '_________________________________' );
+      Result := True;
    end;
 end;
 
@@ -173,14 +182,13 @@ procedure TPrincipal.AjstBtnSac;
 begin
    btnSacar.caption := 'Sacar';
    btnSacar.font.Color := clRed;
-   //.Enabled := false;
 end;
 
 procedure TPrincipal.AjstBtnDev;
 begin
    btnDevolver.Caption := 'Devolver';
    btnDevolver.font.Color := clBlue;
-   //btnDevolver.enabled:= false;
+   btnDevolver.visible:= false;
 end;
 
 end.

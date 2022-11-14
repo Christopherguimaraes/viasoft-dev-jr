@@ -1,0 +1,196 @@
+unit View.Principal;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.Grids, Vcl.DBGrids,
+  Data.DB, Model.Interfaces, Vcl.Mask;
+
+type
+  TPrincipal = class(TForm)
+    FAcao : iAcao;
+    FPessoa : iPessoa;
+    mMovFinanc: TMemo;
+    Label1: TLabel;
+    Label2: TLabel;
+    eSaldo: TEdit;
+    btnDepositar: TSpeedButton;
+    btnSacar: TSpeedButton;
+    btnDevolver: TSpeedButton;
+    procedure FormShow(Sender: TObject);
+    procedure btnDepositarClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure mMovFinancChange(Sender: TObject);
+    procedure btnDevolverClick(Sender: TObject);
+    procedure btnSacarClick(Sender: TObject);
+    procedure eSaldoChange(Sender: TObject);
+    procedure SpeedButton3Click(Sender: TObject);
+    const AcaoDep = 0;
+          AcaoSac = 1;
+          AcaoDev = 2;
+
+  private
+    function InserirGrid:boolean;
+    function InserirPessoa: boolean;
+    function InserirValor:boolean;
+    procedure Sair;
+    function InserirInformacoes: boolean;
+    procedure AjstBtnDep;
+    procedure AjstBtnDev;
+    procedure AjstBtnSac;
+    procedure AjstSaldo;
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Principal: TPrincipal;
+
+implementation
+
+uses
+  Model.Pessoa, ModelAcao;
+
+{$R *.dfm}
+
+procedure TPrincipal.btnDepositarClick(Sender: TObject);
+begin
+   FAcao.setAcao(AcaoDep);
+   InserirInformacoes;
+end;
+
+function TPrincipal.InserirInformacoes : boolean;
+begin
+   Result := false;
+   if InserirPessoa then begin
+      if InserirValor then begin
+         if InserirGrid then
+           if FAcao.getDescAcao(FAcao.getAcao) = 'Sacou' then begin
+              btnDevolver.Enabled:= True;
+              btnDevolver.Font.Color := clBlue;
+           end;
+           if FAcao.getDescAcao(FAcao.getAcao) = 'Devolveu' then
+               btnDevolver.Enabled:= False;
+      end;
+   end;
+end;
+
+function TPrincipal.InserirPessoa: boolean;
+begin
+   Result := False;
+   while Result = False do begin
+      var APessoa :='';
+      InputQuery('Insira o nome da pessoa','Nome',APessoa);
+      if not APessoa.IsEmpty then begin
+         if not FPessoa.setNome(APessoa) then
+            Continue
+         else
+         Result := True;
+      end else
+         exit;
+   end;
+end;
+
+procedure TPrincipal.Sair;
+begin
+   exit;
+end;
+
+procedure TPrincipal.SpeedButton3Click(Sender: TObject);
+begin
+
+end;
+
+function TPrincipal.InserirValor:boolean;
+begin
+   Result := False;
+   while Result = False do begin
+      var AValor :='';
+      inputQuery('Insira o valor','Valor',AValor);
+      if not(AValor.IsEmpty) and not(FPessoa.getNome.IsEmpty) then begin
+         if not FAcao.SetValor(AValor) then
+            continue
+         else
+            Result := true;
+      end else
+         Exit;
+   end;
+   //implementar para não permitir devolver, sem antes ter sacado um valor.
+end;
+procedure TPrincipal.mMovFinancChange(Sender: TObject);
+begin
+end;
+
+function TPrincipal.InserirGrid:boolean;
+begin
+   Result := False;
+   var ASaldoAnt := StrToCurr(eSaldo.Text);
+   eSaldo.Text := FAcao.Calcular(FAcao.getOperacao,FAcao.GetValor,StrToCurr(eSaldo.text));
+   if {(StrToCurr(eSaldo.Text) > 0) and }(StrToCurr(eSaldo.Text)<> ASaldoAnt) then begin
+      mMovFinanc.Lines.Add(FPessoa.GetNome +' | ' +
+                           FAcao.getDescAcao(FAcao.getAcao) + ' | ' +
+                           CurrToStr(FAcao.getValor) + sLineBreak +
+                           '_________________________________' );
+      Result := True;
+   end;
+end;
+
+procedure TPrincipal.btnDevolverClick(Sender: TObject);
+begin
+   FAcao.setAcao(ACaoDev);
+   InserirInformacoes
+end;
+
+procedure TPrincipal.btnSacarClick(Sender: TObject);
+begin
+   FAcao.setAcao(AcaoSac);
+   InserirInformacoes
+end;
+
+procedure TPrincipal.eSaldoChange(Sender: TObject);
+begin
+end;
+
+procedure TPrincipal.FormCreate(Sender: TObject);
+begin
+   FPessoa := TModelpessoa.new;
+   FAcao := TModelAcao.new;
+end;
+
+procedure TPrincipal.FormShow(Sender: TObject);
+begin
+   AjstSaldo;
+   AjstBtnDep;
+   AjstBtnSac;
+   AjstBtnDev;
+end;
+
+procedure TPrincipal.AjstSaldo;
+begin
+   eSaldo.ReadOnly := true;
+   eSaldo.Text := '0';
+end;
+
+procedure TPrincipal.AjstBtnDep;
+begin
+   btnDepositar.caption := 'Depositar';
+   btnDepositar.font.Color := clGreen;
+end;
+
+procedure TPrincipal.AjstBtnSac;
+begin
+   btnSacar.caption := 'Sacar';
+   btnSacar.font.Color := clRed;
+   //.Enabled := false;
+end;
+
+procedure TPrincipal.AjstBtnDev;
+begin
+   btnDevolver.Caption := 'Devolver';
+   btnDevolver.font.Color := clBlue;
+   btnDevolver.enabled:= false;
+end;
+
+end.
